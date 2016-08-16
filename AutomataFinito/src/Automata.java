@@ -208,4 +208,60 @@ public class Automata {
         return -1;
     }
     
+    //Metodo para generar 5 hileras aceptadas por un automata
+    public String generarHilera(Automata ab) {
+        String hilera;
+        String grupoHileras = "";
+        Vector simbolos = ab.getSimbolos();
+        Vector estados = ab.getEstados();
+        Estado estActual;
+        String transicionHacia="";
+        String estadoActual="";
+        boolean siguiente;
+        
+        Iterator imprimirEstados = estados.iterator();
+        int conEstados = 0;
+        while (imprimirEstados.hasNext() && conEstados < estados.size()) {
+            Estado estadoAux = (Estado) imprimirEstados.next();
+            conEstados++;
+            if (estadoAux.isInicial()) {
+                grupoHileras = grupoHileras + "*" + estadoAux.getIcono() + ": " + estadoAux.getDescripcion() + "\n";
+            }else {
+                if(estadoAux.isEstado()) {
+                    grupoHileras = grupoHileras + estadoAux.getIcono() + ": " + estadoAux.getDescripcion() + "\n";
+                } else {
+                    if(conEstados == estados.size()) {
+                        grupoHileras= grupoHileras + estadoAux.getIcono() + ": nulo \n";
+                    } else {
+                        grupoHileras = grupoHileras + estadoAux.getIcono() + ": " + estadoAux.getDescripcion() + "\n";
+                    }
+                }
+                
+            }
+        }
+        
+        Vector [][] vectorTransiciones = ab.getTransiciones();
+        boolean respuesta;
+        int posEstadoActual = 0;
+        int contadorRespuestas = 0;
+        
+        for (int i = 1; i < 6; i++) {
+            hilera = "";
+            int simboloEscogido = 0;
+            estActual = null;
+            siguiente = true;
+            respuesta = false;
+            Iterator estadosIterator = estados.iterator();
+            while(estadosIterator.hasNext()) {
+                Estado estadoAux = (Estado) estadosIterator.next();
+                if(estadoAux.isInicial()) {
+                    estActual = estadoAux;
+                    
+                }
+            }
+        }
+        
+        
+    }
+    
 }
