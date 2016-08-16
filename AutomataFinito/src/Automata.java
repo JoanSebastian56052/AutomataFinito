@@ -8,6 +8,7 @@
 import java.awt.Component;
 import java.util.Iterator;
 import java.util.Vector;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -124,8 +125,87 @@ public class Automata {
         }
         Iterator estadosIterator = estados.iterator();
         
+        while (estadosIterator.hasNext()) {
+            Estado estadoAux = (Estado) estadosIterator.next();
+            if (estadoAux.isInicial()) {
+                estActual = estadoAux;
+                aux = aux + "\nNos situamos en el estado inicial que es: " 
+                + estActual.getIcono();
+                break;
+            }
+        }
         
+        Vector[][] vectorTransiciones = ab.getTransiciones();
+        boolean respuesta = estActual.isEstado();
+        int simboloPosicion = -1;
+        for (int i=0; i<simIngresados.length();i++) {
+            int cont = 0;
+            char simboloIngresado = simIngresados.charAt(i);
+            if (i==0) {
+                aux = aux + "\nEl primer simbolo de la hilera ingresada es: " + simboloIngresado + "\n";
+                
+            } else {
+                aux = aux + "\nEL siguiente simbolo de la hilera es: " + simboloIngresado + "\n";
+            }
+            Iterator simbolosIterator = simbolos.iterator();
+            while (simbolosIterator.hasNext()) {
+                String sr = (String) simbolosIterator.next();
+                char[] s = sr.toCharArray();
+                if (s[0] == simboloIngresado) {
+                    simboloPosicion = cont;
+                    break;
+                }
+                cont++;
+            }
+            if (simboloPosicion != -1) {
+                String estadoActual = estActual.getIcono();
+                aux = aux + "El estado actual es: " + estActual.getIcono() + "\n";
+                int posEstaActual = retornaPos(estadoActual);
+                String transicionHacia = (String) vectorTransiciones[posEstaActual][simboloPosicion+1].get(0);
+                aux = aux + "La transicion del estado " + estadoActual +
+                        " es hacia " + transicionHacia + " con el simbolo " + simIngresados + "\n";
+                posEstaActual = buscar(transicionHacia, estados);
+                estActual = (Estado) estados.get(posEstaActual);
+                respuesta = estActual.isEstado();
+            } else {
+                aux = aux + "Como no es el estado de aceptacion, la hilera se rechaza. ";
+                JOptionPane.showMessageDialog(rootPane, "Reachazado");
+            }
+        }
+        if (respuesta) {
+            aux = aux + "Ahora nos situamos en el estado " + estActual.getIcono() + " y como es el estado de aceptacion, la hilera se acepta.";
+            JOptionPane.showMessageDialog(rootPane, "Aceptado");
+        } else {
+            aux = aux + "Como no es el estado de aceptacion, la hilera se rechaza. ";
+            JOptionPane.showMessageDialog(rootPane, "Reachazado");
+        }
         return aux;
+    }
+    
+    
+    //Metodo para retornar la posicion de un estado 
+    private int retornaPos(String estadoActual) {
+        String num ="";
+        for (int k=1; k<estadoActual.length(); k++) {
+            char c = estadoActual.charAt(k);
+            num = num + c;
+        }
+        return (Integer.parseInt(num));
+    }
+    
+    //Metodo para buscar un string especifico en un vector
+    private int buscar(String a, Vector e) {
+        int p= 0;
+        Iterator j = e.iterator();
+        while (j.hasNext()) {
+            Estado ee = (Estado) j.next();
+            String es = (String) ee.getIcono();
+            if(es.equals(a)) {
+                return(p);
+            }
+            p++;
+        }
+        return -1;
     }
     
 }
