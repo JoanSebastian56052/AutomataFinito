@@ -9,6 +9,8 @@ import java.awt.Component;
 import java.util.Iterator;
 import java.util.Vector;
 import javax.swing.JOptionPane;
+import javax.swing.JTable;
+import javax.swing.JTextArea;
 
 /**
  *
@@ -256,12 +258,63 @@ public class Automata {
                 Estado estadoAux = (Estado) estadosIterator.next();
                 if(estadoAux.isInicial()) {
                     estActual = estadoAux;
-                    
+                    break;
+                }
+            }
+            grupoHileras = grupoHileras + "\nMe situo en el primer estado que es: " + estActual.getIcono() + "\n";
+            if (contadorRespuestas < 5) {
+                int contadorTrans = 0;
+                String recorridoTrans = "";
+                while (!respuesta && siguiente) {
+                    estadoActual = estActual.getIcono();
+                    recorridoTrans = recorridoTrans + "Si estoy en: " + estadoActual;
+                    posEstadoActual = retornaPos(estadoActual);
+                    simboloEscogido = (int) (Math.random()* (simbolos.size()));
+                    recorridoTrans = recorridoTrans + " y  me entra un: " + Integer.toString(simboloEscogido);
+                    transicionHacia = (String) vectorTransiciones[posEstadoActual][simboloEscogido + 1].get(0);
+                    recorridoTrans = recorridoTrans + " me voy hacia " + transicionHacia;
+                    hilera = hilera + simbolos.get(posEstadoActual);
+                    recorridoTrans = recorridoTrans + " y en la hilera pongo un: " + simbolos.get(simboloEscogido);
+                    posEstadoActual = buscar(transicionHacia, estados);
+                    estActual = (Estado) estados.get(posEstadoActual);
+                    contadorTrans++;
+                    respuesta = estActual.isEstado();
+                    if (estActual == estados.get(estados.size() - 1)) {
+                        siguiente = true;
+                        hilera = "";
+                        recorridoTrans="";
+                        contadorRespuestas=0;
+                        Iterator nuevoIterator = estados.iterator();
+                        while(nuevoIterator.hasNext()) {
+                            Estado estadoAux = (Estado) nuevoIterator.next();
+                            if(estadoAux.isInicial()) {
+                                estActual = estadoAux;
+                                break;
+                            }
+                        }
+                    } else {
+                        if(respuesta && i > 1 && contadorTrans <= i) {
+                            siguiente = true;
+                            respuesta = false;
+                        } else {
+                            if (respuesta) {
+                                grupoHileras = grupoHileras + recorridoTrans + 
+                                        " Como el estado: " + estActual.getIcono() + 
+                                        ", es de aceptacion terminamos.\n La hilera " 
+                                        + i + " es: " + hilera + "\n";
+                                siguiente = false;
+                                contadorRespuestas++;
+                            }
+                        }
+                    }
                 }
             }
         }
-        
-        
+        return grupoHileras;
     }
     
+    public Automata NoDeterToDeter(Automata automataOri, JTable tabla1, JTextArea area) {
+        
+        return (automataOri);
+    }
 }
