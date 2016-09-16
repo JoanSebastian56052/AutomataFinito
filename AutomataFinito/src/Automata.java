@@ -314,7 +314,224 @@ public class Automata {
     }
     
     public Automata NoDeterToDeter(Automata automataOri, JTable tabla1, JTextArea area) {
+        Automata autDete;
+        Vector estado = new Vector();
+        Vector estadoMinimo = new Vector();
+        Vector[][] trans = automataOri.getTransiciones();
+        int j = automataOri.getEstados().size();
+        int m = automataOri.getSimbolos().size();
+        Vector[] cierres = new Vector[j];
+        trans = new Vector[2][m+1];
+                int n = 1;
+        Iterator kk = automataOri.getSimbolos().iterator();
         
+        while(kk.hasNext()) {
+            String gg = (String)kk.next();
+            
+            if(gg != "λ") {
+                try {
+                    trans[0][n].add(gg);
+                } catch (Exception e) {
+                    trans[0][n] = new Vector();
+                    trans[0][n].add(gg);
+                }
+                n++;
+            }
+        }
+        
+        //Cierres de lambda
+        for(int k = 0; k < j; k++) {
+            Vector lambda = new Vector();
+            Vector l = (Vector)tabla1.getValueAt(k+1, m);
+            lambda = (Vector)l.clone();
+            
+            if(!existe(lambda, tabla1.getValueAt(k+1, 0).toString())) {
+                lambda.add(tabla1.getValueAt(k+1, 0));
+            }
+            
+            for(int h = 0; h < lambda.size(); h++) {
+                lambda = ingresaCierre(automataOri, lambda, h, tabla1);
+            }
+            cierres[k] = lambda;
+        }
+        
+        //Ingresando automata inicial en el Estado minimizado
+        int y = 1;
+        int es = 0;
+        boolean aceptacion = false;
+        Iterator p = cierres[0].iterator();
+        String no = "";
+        
+        while(p.hasNext()) {
+            String q = (String)p.next();
+            Estado cons = recuperar(automataOri, q);
+            
+            if(cons.isEstado()) {
+                aceptacion = true;
+            }
+            no = no + " " + q;
+        }
+        
+        Estado nuevoE1 = new Estado("S" + y, no, true, aceptacion);
+        trans = añadirEstado("S"+y, y, automataOri.getSimbolos().size() + 1, aceptacion, trans);
+        estado.add(cierres[0]);
+        estadoMinimo.add(nuevoE1);
+        String desc;
+        
+        if(aceptacion) {
+            desc = " * " + "S" + y + " : " + no + " (Aceptacion)";
+        } else {
+            desc = " * " + "S" + y + " : " + no;
+        }
+        y++;
+        aceptacion = false;
+        es++;
+        
+        //Evaluacion de cada cierre con los simbolos de entrada
+        Cola w = new Cola();
+        w.agregar(cierres[0]);
+        int ss = 1;
+        
+        while(!w.esVacio()) {
+            Vector z = (Vector)w.buscar();
+            
+            for(int t = 1; t < m; t++) {
+                Vector vv = new Vector();
+                Iterator a = z.iterator();
+                
+                while(a.hasNext()) {
+                    String b = (String)a.next();
+                    int x = retornaPos(b, automataOri, tabla1);
+                    if (tabla1.getValueAt(x, t) != null) {
+                        Vector s = (Vector) tabla1.getValueAt(x, t);
+
+                        Iterator c = s.iterator();
+                        while (c.hasNext()) {
+                            String gg = (String) c.next();
+                            if (!existe(vv, gg)) {
+
+                                vv.add(gg);
+                            }
+                        }
+                    }
+                }
+
+                Vector v1 = new Vector();
+                boolean ini = false;
+                String nom = "";
+                Iterator d = vv.iterator();
+                while (d.hasNext()) {
+                    String h1 = (String) d.next();
+                    Vector q = cierres[retornaNum(h1) - 1];
+                    Iterator ii = q.iterator();
+                    while (ii.hasNext()) {
+                        String inf = (String) ii.next();
+                        Estado cons = recuperar(automataOri, inf);
+                        if (cons.isEstado()) {
+                            aceptacion = true;
+                        }
+                        if (h1.equals("E1")) {
+                            ini = true;
+                        }
+                        nom = nom + " " + inf;
+                    }
+                    v1 = (Vector) concatenar(v1, q).clone();
+
+                }
+                if (nom != "") {
+
+                    int veri = existaV(v1, estado);
+                    if (veri == -1) {
+
+                        Estado nuevoE = new Estado("S" + y, nom, ini, aceptacion);
+                        int xx = y;
+                        if (aceptacion) {
+
+                            desc = desc + "\n" + "S" + xx + " : " + nom + " (Aceptación)";
+
+                        } else {
+
+                            desc = desc + "\n" + "S" + xx + " : " + nom;
+
+                        }
+
+                        trans = añadirEst("S" + y, y, automataOri.getSimbolos().size() + 1, aceptacion, trans);
+                        aceptacion = false;
+                        try {
+                            trans[ss][t].add("S" + y);
+                        } catch (Exception e) {
+                            trans[ss][t] = new Vector();
+                            trans[ss][t].add("S" + y);
+                        }
+                        estado.add(v1);
+                        estadoMinimo.add(nuevoE);
+                        es++;
+                        y++;
+                        w.agregar(v1);
+                        nom = "";
+                    } else {
+                        Estado ee = (Estado) estadoMinimo.get(veri);
+                        try {
+                            trans[ss][t].add(ee.getIcono());
+                        } catch (Exception e) {
+                            trans[ss][t] = new Vector();
+                            trans[ss][t].add(ee.getIcono());
+                        }
+
+                    }
+                    aceptacion = false;
+                }
+            }
+            ss++;
+        }
+
+        autDete = new Automata(automataOri.getNomAutomata() + "Min", sinLambda(automataOri.getSimbolos()), estadoMinimo, trans);
+        automataOri.setAutMin(autDete);
+        area.setText(desc);
         return (automataOri);
+    }
+
+    private boolean existe(Vector lambda, String toString) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private Vector ingresaCierre(Automata automataOri, Vector lambda, int h, JTable tabla1) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private Estado recuperar(Automata automataOri, String q) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private Vector[][] añadirEstado(String string, int y, int i, boolean aceptacion, Vector[][] trans) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private int retornaPos(String b, Automata automataOri, JTable tabla1) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private int retornaNum(String h1) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private int existaV(Vector v1, Vector estado) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private Vector concatenar(Vector v1, Vector q) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private Vector[][] añadirEst(String string, int y, int i, boolean aceptacion, Vector[][] trans) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private Vector sinLambda(Vector simbolos) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private void setAutMin(Automata autDete) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
