@@ -11,6 +11,7 @@ import java.util.Vector;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
+import javax.swing.table.DefaultTableModel;
 
 /**
  *
@@ -490,21 +491,291 @@ public class Automata {
         area.setText(desc);
         return (automataOri);
     }
+    
+    public String simplificarAutomata(Automata abc, JTable tabla2) {
+        Automata automata = abc.getAutRed();
+        String desc = "";
+        DefaultTableModel modelo;
+        Vector parteA = new Vector();
+        Vector parteB = new Vector();
+        Vector estadosM = automata.getEstados();
+        Estado nulo = new Estado("", "nulo", false, false);
+        parteA.add(nulo);
+        Iterator e = estadosM.iterator();
+        
+        while(e.hasNext()) {
+            Estado ee = (Estado) e.next();
+            
+            if(ee.isEstado()) {
+                parteB.add(ee);
+            } else {
+                parteA.add(ee);
+            }
+        }
+        Vector estadosMini = new Vector();
+        if(!parteA.isEmpty()) {
+            estadosMini.add(parteA);
+        }
+        if(!parteB.isEmpty()) {
+            estadosMini.add(parteB);
+        }
+        
+        estadosMini = minimizar(automata.getSimbolos().size(), automata.getTransiciones(), estadosMini);
+        modelo = new DefaultTableModel(estadosMini.size() + 1, automata.getSimbolos().size() + 2);
+        modelo.setValueAt(null, 0, 0);
+        Vector[][] trans = new Vector[estadosMini.size() + 1][automata.getSimbolos().size() + 2];
+        Vector esta = new Vector();
+        int y = 1;
+        Iterator ss = estadosMini.iterator();
+        
+        while(ss.hasNext()) {
+            ss.next();
+            Estado nuevo = new Estado("T" + y, "", false, false);
+            trans[y][0] = new Vector();
+            trans[y][0].add(nuevo.getIcono());
+            modelo.setValueAt("T"+ y, y, 0);
+            y++;
+            esta.add(nuevo);
+        }
+        
+        for(int ii = 1; ii <= automata.getSimbolos().size(); ii++) {
+            modelo.setValueAt(automata.getSimbolos().get(ii-1), 0, ii);
+            trans[0][ii] = new Vector();
+            trans[0][ii].add(automata.getSimbolos().get(ii-1));
+        }
+        y=0;
+        boolean nul = true;
+        estadosMini = ordena(estadosMini);
+        Iterator s = estadosMini.iterator();
+        
+        while(s.hasNext()) {
+            String desA = "";
+            String desB = "";
+            boolean ini = false;
+            boolean acep = false;
+            Estado b;
+            Vector a = (Vector) s.next();
+            y++;
+            Iterator sA = a.iterator();
+            
+            while(sA.hasNext()) {
+                Estado es = (Estado)sA.next();
+                if(!es.getDescripcion().equals("nulo")) {
+                    if(es.isEstado()) {
+                        acep = true;
+                    }
+                    if(es.isInicial()) {
+                        ini = true;
+                    }
+                    if(!existeString(es.getIcono(), desA)) {
+                        desA = concatenarString(desA, es.getDescripcion());
+                        desB = desB + es.getIcono();
+                        int x = retornaNum(es.getIcono());
+                        
+                        for(int aa = 1; aa<= automata.getSimbolos().size(); aa++) {
+                            Vector cc = (Vector) tabla2.getValueAt(x, aa);
+                            
+                            if(cc == null) {
+                                modelo.setValueAt("T" + estadosMini.size(), y, aa);
+                                trans[y][aa] = new Vector();
+                                trans[y][aa].add("T" + estadosMini.size());
+                            } else {
+                                String dd = (String) cc.get(0);
+                                int pos = encuentraEs(dd, estadosMini);
+                                
+                                if(pos != -1) {
+                                    pos++;
+                                    modelo.setValueAt("T" + pos, y, aa);
+                                    trans[y][aa] = new Vector();
+                                    trans[y][aa].add("T" + pos);
+                                }
+                            }
+                        }
+                    }
+                    int gg = 0;
+                    
+                    if(acep) {
+                        gg = 1;
+                    }
+                    modelo.setValueAt(gg, y, automata.getSimbolos().size() + 2);
+                    trans[y][automata.getSimbolos().size() + 1] = new Vector();
+                    trans[y][automata.getSimbolos().size() + 1].add(gg);
+                    Estado ef = (Estado) esta.get(y-1);
+                    ef.setDescripcion(desA);
+                    ef.setEstado(acep);
+                    ef.setInicial(ini);
+                } else {
+                    if(desA.isEmpty()) {
+                        desA = desA + "nulo";
+                    } else {
+                        desA = desA + ", nulo";
+                    }
+                    for(int kk= 0; kk<= automata.getSimbolos().size(); kk++) {
+                        modelo.setValueAt("T"+estadosMini.size(), estadosMini.size(), kk);
+                        
+                        if(kk != 0) {
+                            trans[estadosMini.size()][kk] = new Vector();
+                            trans[estadosMini.size()][kk].add("T"+estadosMini.size());
+                        }
+                    }
+                    modelo.setValueAt(0, estadosMini.size(), automata.getSimbolos().size()+1);
+                    nul = false;
+                    y--;
+                }
+            }
+            
+            if(nul) {
+                int xx = y;
+                if(acep) {
+                    if(ini) {
+                        desc = desc + "\n" + "*" + "T" + xx + " : " + desA + " (Aceptacion)";
+                    } else {
+                        desc = desc + "\n" + "T" + xx + " : " + desA + " (Aceptacion)";
+                    }
+                } else {
+                    if (ini) {
+                        desc = desc + "\n" + "*" + "T" + xx + " : " + desA;
+                    } else {
+                        desc = desc + "\n" + "T" + xx + " : " + desA;
+                    }
+                }
+            } else {
+                int xx = y + 1;
+                if(acep) {
+                    if(ini) {
+                        desc = desc + "\n" + "*" + "T" + xx + " : " + desA + " (Aceptacion)";
+                    } else {
+                        desc = desc + "\n" + "T" + xx + " : " + desA + " (Aceptacion)";
+                    }
+                } else {
+                    if (ini) {
+                        desc = desc + "\n" + "*" + "T" + xx + " : " + desA;
+                    } else {
+                        desc = desc + "\n" + "T" + xx + " : " + desA;
+                    }
+                }
+                nul = true;
+            }
+        }
+        Automata autDeter = new Automata(abc.getNomAutomata() + "Min", automata.getSimbolos(), esta, trans);
+        abc.setAutMin(autDeter);
+        tabla2.setModel(modelo);
+        return(desc);
+    }
+    
+    private String concatenarString(String a, String b) {
+        int z = b.length();
+        String con = a;
+        String est = "";
+        for(int i = 0; i < z; i++) {
+            if(b.charAt(i)!= ' ') {
+                est = est + b.charAt(i);
+            } else {
+                if(!existeString(est, con)) {
+                    con = con + " " + est;
+                }
+                est = "";
+            }
+        }
+        if(!est.equals("")) {
+            if(!existeString(est, con)) {
+                con = con + " " + est;
+            }
+        }
+        return con;
+    }
+    
 
-    private boolean existe(Vector lambda, String toString) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private boolean existe(Vector v, String z) {
+        if(v != null) {
+            Iterator i = v.iterator();
+            
+            while(i.hasNext()) {
+                if(i.next().equals(z)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
-    private Vector ingresaCierre(Automata automataOri, Vector lambda, int h, JTable tabla1) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private Vector ingresaCierre(Automata a1, Vector v, int l, JTable tabla1) {
+        String n = (String) v.get(l);
+        Estado e = recuperar(a1, n);
+        Vector buscar;
+        if(e != null) {
+            buscar = null;
+            int g = tabla1.getRowCount();
+            
+            for(int h = 0; h < g; h++) {
+                String s = (String) tabla1.getValueAt(h+1, 0);
+                
+                if(s.equals(e.getIcono())) {
+                    buscar = (Vector) tabla1.getValueAt(h+1, a1.getSimbolos().size());
+                    break;
+                }
+            }
+            int c = 0;
+            
+            if(buscar != null) {
+                c = buscar.size();
+            }
+            for(int h = 0; h < c; h++) {
+                Iterator a = buscar.iterator();
+                
+                while(a.hasNext()) {
+                    String b = (String) a.next();
+                    if(!existe(v, b)) {
+                        v.add(b);
+                    }
+                }
+            }
+            
+        }
+        return v;
     }
 
-    private Estado recuperar(Automata automataOri, String q) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private Estado recuperar(Automata autt, String n) {
+        Vector v = (Vector) autt.getEstados();
+        Iterator a = v.iterator();
+        
+        while(a.hasNext()) {
+            Estado e = (Estado) a.next();
+            
+            if(e.getIcono().equals(n)) {
+                return e;
+            }
+        }
+        return null;
     }
 
-    private Vector[][] añadirEstado(String string, int y, int i, boolean aceptacion, Vector[][] trans) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private Vector[][] añadirEstado(String min, int i, int n, boolean aceptacion, Vector[][] trans) {
+        Vector[][] nuevo = new Vector[i + 1][n];
+        
+        for(int j = 0; j < i; j++) {
+            for(int k = 0; k < n; k++) {
+                try {
+                    nuevo[j][k] = (Vector) trans[j][k];
+                } catch(Exception e) {
+                    nuevo[j][k] = new Vector();
+                    nuevo[j][k] = (Vector) trans[j][k];
+                }
+            }
+        }
+        try {
+            nuevo[i][0].add(min);
+        } catch(Exception e) {
+            nuevo[i][0] = new Vector();
+            nuevo[i][0].add(min);
+            nuevo[i][n-1] = new Vector();
+            
+            if(aceptacion) {
+                nuevo[i][n - 1].add(1);
+            } else {
+                nuevo[i][n-1].add(0);
+            }
+        }
+        return nuevo;
     }
 
     private int retornaPos(String b, Automata automataOri, JTable tabla1) {
@@ -532,6 +803,22 @@ public class Automata {
     }
 
     private void setAutMin(Automata autDete) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private Vector minimizar(int size, Vector[][] transiciones, Vector estadosMini) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private Vector ordena(Vector estadosMini) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private boolean existeString(String icono, String desA) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private int encuentraEs(String dd, Vector estadosMini) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
