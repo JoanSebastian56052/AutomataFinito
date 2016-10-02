@@ -778,8 +778,15 @@ public class Automata {
         return nuevo;
     }
 
-    private int retornaPos(String b, Automata automataOri, JTable tabla1) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private int retornaPos(String n, Automata a, JTable tabla1) {
+       int max = a.getEstados().size();
+       
+       for(int i = 1; i < max; i++) {
+           if(tabla1.getValueAt(1, 0).toString().equals(n)) {
+               return 1;
+           }
+       }
+       return -1;
     }
 
     private int retornaNum(String h1) {
@@ -806,19 +813,159 @@ public class Automata {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private Vector minimizar(int size, Vector[][] transiciones, Vector estadosMini) {
+    private Vector minimizar(int sim, Vector[][] tr, Vector mini) {
+        Vector tra;
+        int pos = 0;
+        int ss = -1;
+        int con = 0;
+        boolean crearon = false;
+        tra = new Vector();
+        Iterator min = mini.iterator();
+        
+        while(min.hasNext()) {
+            Vector aa = (Vector) min.next();
+            for(int ii = 1; ii <= sim; ii++) {
+                ss = -1;
+                Iterator a1 = aa.iterator();
+                tra = new Vector();
+                Vector us = new Vector();
+                us.add(con);
+                tra.add(us);
+                
+                while(a1.hasNext()){
+                    String t;
+                    Estado ae = (Estado) a1.next();
+                    
+                    if(ae.getIcono().equals("")) {
+                        t = "";
+                    } else {
+                        int x = retornaNum(ae.getIcono());
+                        if(tr[x][ii] == null) {
+                            t = "";
+                        } else {
+                            t = (String) tr[x][ii].get(0).toString();
+                        }
+                    }
+                    pos = encuentraEs(t, mini);
+                    if(pos != -1) {
+                        if(ss == -1) {
+                            ss = pos;
+                        }
+                        if(pos != ss) {
+                            int poss = encuenTrans(Integer.toString(pos), tra);
+                            if(poss != -1) {
+                                Vector re = (Vector) tra.get(poss);
+                                re.add(ae);
+                            } else {
+                                Vector bb = new Vector();
+                                bb.add(pos);
+                                bb.add(ae);
+                                tra.add(bb);
+                            }
+                        }
+                    }
+                }
+                if(tra.size() > 1) {
+                    mini = creaPart(tra, mini);
+                    crearon = true;
+                }
+            }
+            con++;
+            if(crearon) {
+                return (minimizar(sim, tr, mini));
+            }
+        }
+        return mini;
+    }
+
+    private Vector ordena(Vector a) {
+        int co= 0;
+        int cc = 0;
+        Iterator a1 = a.iterator();
+        
+        while(a1.hasNext()) {
+            Vector b = (Vector) a1.next();
+            Iterator b1 = b.iterator();
+            
+            while(b1.hasNext()) {
+                Estado ee = (Estado) b1.next();
+                
+                if(ee.isInicial()) {
+                    if(cc != 0) {
+                        if(a.size() > 1) {
+                            a = intercambia(a, 0, co);
+                            a = intercambia(a, co, a.size() - 1);
+                        } else {
+                            b = intercambiaEs(b, 0, cc);
+                            b = intercambiaEs(b, cc, b.size() - 1);
+                            a.setElementAt(b, co);
+                        }
+                        return a;
+                    }
+                }
+                cc++;
+            }
+            co++;
+        }
+        return null;
+    }
+
+    private boolean existeString(String a, String b) {
+        char c;
+        int j = b.length();
+        String es = "";
+        
+        for (int ii = 0; ii < j; ii++) {
+            char h = b.charAt(ii);
+            
+            if(h==' ') {
+                if(es.equals(a)) {
+                    return true;
+                } else {
+                    es = "";
+                }
+            } else {
+                es = es + h;
+            }
+        }
+        
+        return false;
+    }
+
+    private int encuentraEs(String a, Vector min) {
+        int p = 0;
+        Iterator j = min.iterator();
+        
+        while(j.hasNext()) {
+            Vector b = (Vector) j.next();
+            Iterator k = b.iterator();
+            
+            while(k.hasNext()) {
+                Estado est = (Estado) k.next();
+                String l = (String) est.getIcono();
+                
+                if(l.equals(a)) {
+                    return p;
+                }
+            }
+            p++;
+        }
+        return -1;
+    }
+
+    private Vector intercambia(Vector a, int i, int co) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private Vector ordena(Vector estadosMini) {
+    private Vector intercambiaEs(Vector b, int i, int cc) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private boolean existeString(String icono, String desA) {
+    private int encuenTrans(String toString, Vector tra) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    private int encuentraEs(String dd, Vector estadosMini) {
+    private Vector creaPart(Vector tra, Vector mini) {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
