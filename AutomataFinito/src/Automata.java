@@ -17,6 +17,7 @@ import javax.swing.table.DefaultTableModel;
  *
  * @author aux10
  */
+
 public class Automata {
     
     //Vector para guardar los simbolos ingresados
@@ -185,32 +186,6 @@ public class Automata {
         return aux;
     }
     
-    
-    //Metodo para retornar la posicion de un estado 
-    private int retornaPos(String estadoActual) {
-        String num ="";
-        for (int k=1; k<estadoActual.length(); k++) {
-            char c = estadoActual.charAt(k);
-            num = num + c;
-        }
-        return (Integer.parseInt(num));
-    }
-    
-    //Metodo para buscar un string especifico en un vector
-    private int buscar(String a, Vector e) {
-        int p= 0;
-        Iterator j = e.iterator();
-        while (j.hasNext()) {
-            Estado ee = (Estado) j.next();
-            String es = (String) ee.getIcono();
-            if(es.equals(a)) {
-                return(p);
-            }
-            p++;
-        }
-        return -1;
-    }
-    
     //Metodo para generar 5 hileras aceptadas por un automata
     public String generarHilera(Automata ab) {
         String hilera;
@@ -314,7 +289,32 @@ public class Automata {
         return grupoHileras;
     }
     
-    public Automata NoDeterToDeter(Automata automataOri, JTable tabla1, JTextArea area) {
+    //Metodo para retornar la posicion de un estado 
+    private int retornaPos(String estadoActual) {
+        String num ="";
+        for (int k=1; k<estadoActual.length(); k++) {
+            char c = estadoActual.charAt(k);
+            num = num + c;
+        }
+        return (Integer.parseInt(num));
+    }
+    
+    //Metodo para buscar un string especifico en un vector
+    private int buscar(String a, Vector e) {
+        int p= 0;
+        Iterator j = e.iterator();
+        while (j.hasNext()) {
+            Estado ee = (Estado) j.next();
+            String es = (String) ee.getIcono();
+            if(es.equals(a)) {
+                return(p);
+            }
+            p++;
+        }
+        return -1;
+    }
+    
+    public Automata NoDeterToDeter(Automata automataOri, JTable tabla1, JTextArea area) throws CloneNotSupportedException {
         Automata autDete;
         Vector estado = new Vector();
         Vector estadoMinimo = new Vector();
@@ -487,7 +487,7 @@ public class Automata {
         }
 
         autDete = new Automata(automataOri.getNomAutomata() + "Min", sinLambda(automataOri.getSimbolos()), estadoMinimo, trans);
-        automataOri.setAutMin(autDete);
+        automataOri.setAutRed(autDete);
         area.setText(desc);
         return (automataOri);
     }
@@ -658,7 +658,7 @@ public class Automata {
             }
         }
         Automata autDeter = new Automata(abc.getNomAutomata() + "Min", automata.getSimbolos(), esta, trans);
-        abc.setAutMin(autDeter);
+        abc.setAutRed(autDeter);
         tabla2.setModel(modelo);
         return(desc);
     }
@@ -788,29 +788,59 @@ public class Automata {
        }
        return -1;
     }
-
-    private int retornaNum(String h1) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    
+    private Vector concatenar(Vector a1, Vector a2) {
+        Iterator a = a2.iterator();
+        while(a.hasNext()) {
+            String bb = (String) a.next();
+            if(!existe(a1,bb)) {
+                a1.add(bb);
+            }
+        }
+        return a1;
     }
 
-    private int existaV(Vector v1, Vector estado) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private int existaV(Vector v1, Vector v2) {
+        boolean rta = false;
+        int cont = 0;
+        int est = 0;
+        Iterator c = v2.iterator();
+        while(c.hasNext()) {
+            Vector hh = (Vector)c.next();
+            est++;
+            if(v1.size() == hh.size()) {
+                Iterator a1 = v1.iterator();
+                Iterator a2 = hh.iterator();
+                while(a1.hasNext()) {
+                    String b1 = (String) a1.next();
+                    a2 = hh.iterator();
+                    while(a2.hasNext()) {
+                        String b2 = (String) a2.next();
+                        if(b1.equals(b2)) {
+                            cont++;
+                        }
+                    }
+                }
+                if(cont==v1.size()) {
+                    return (est-1);
+                } else {
+                    cont = 0;
+                }
+            }
+        }
+        return -1;
     }
 
-    private Vector concatenar(Vector v1, Vector q) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private Vector[][] añadirEst(String string, int y, int i, boolean aceptacion, Vector[][] trans) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private Vector sinLambda(Vector simbolos) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private void setAutMin(Automata autDete) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private Vector sinLambda(Vector con) {
+        Vector b = new Vector();
+        Iterator a = con.iterator();
+        while(a.hasNext()) {
+            String aa = a.next().toString();
+            if(!aa.equals("λ")) {
+                b.add(aa);
+            }
+        }
+        return b;
     }
 
     private Vector minimizar(int sim, Vector[][] tr, Vector mini) {
@@ -852,7 +882,7 @@ public class Automata {
                             ss = pos;
                         }
                         if(pos != ss) {
-                            int poss = encuenTrans(Integer.toString(pos), tra);
+                            int poss = encuentraEs(Integer.toString(pos), tra);
                             if(poss != -1) {
                                 Vector re = (Vector) tra.get(poss);
                                 re.add(ae);
@@ -876,6 +906,25 @@ public class Automata {
             }
         }
         return mini;
+    }
+    
+    public Vector creaPart(Vector a, Vector b) {
+        Vector aaa = (Vector) a.get(0);
+        int p = (Integer) aaa.get(0);
+        a.remove(0);
+        Iterator a1 = a.iterator();
+        while(a1.hasNext()) {
+            Vector aa = (Vector) a1.next();
+            b.add(aa);
+            aa.remove(0);
+            Iterator aux = aa.iterator();
+            while(aux.hasNext()) {
+                Estado es = (Estado) aux.next();
+                Vector h = (Vector) b.get(p);
+                h.remove(es);
+            }
+        }
+        return b;
     }
 
     private Vector ordena(Vector a) {
@@ -909,6 +958,20 @@ public class Automata {
         }
         return null;
     }
+    
+    public Vector intercambia(Vector a, int pos1, int pos2) {
+        Vector aux = (Vector) a.get(pos1);
+        a.setElementAt(a.get(pos2), pos1);
+        a.setElementAt(aux, pos2);
+        return a;
+    }
+    
+    public Vector intercambiaEs(Vector a, int pos1, int pos2) {
+        Estado aux = (Estado) a.get(pos1);
+        a.setElementAt(a.get(pos2), pos1);
+        a.setElementAt(aux, pos2);
+        return a;
+    }
 
     private boolean existeString(String a, String b) {
         char c;
@@ -931,7 +994,7 @@ public class Automata {
         
         return false;
     }
-
+            
     private int encuentraEs(String a, Vector min) {
         int p = 0;
         Iterator j = min.iterator();
@@ -953,19 +1016,39 @@ public class Automata {
         return -1;
     }
 
-    private Vector intercambia(Vector a, int i, int co) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    private int retornaNum(String n) {
+        String num = "";
+        for(int k = 1; k < n.length(); k++) {
+            char c = n.charAt(k);
+            num = num + c;
+        }
+        return (Integer.parseInt(num));
     }
 
-    private Vector intercambiaEs(Vector b, int i, int cc) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private int encuenTrans(String toString, Vector tra) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    private Vector creaPart(Vector tra, Vector mini) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    private Vector[][] añadirEst(String min, int i, int n, boolean acept, Vector[][] trans) {
+        Vector[][] nueva = new Vector[i+1][n];
+        for(int j = 0; j < i; j++) {
+            for(int k = 0; k < n; k++) {
+                try {
+                    nueva[j][k] = (Vector) trans[j][k];
+                } catch(Exception e) {
+                    nueva[j][k] = new Vector();
+                    nueva[j][k] = (Vector) trans[j][k];
+                }
+            }
+        }
+        try {
+            nueva[i][0].add(min);
+        } catch(Exception e) {
+            nueva[i][0] = new Vector();
+            nueva[i][0].add(min);
+            nueva[i][n-1] = new Vector();
+            if(acept) {
+                nueva[i][n-1].add(1);
+            } else {
+                nueva[i][n-1].add(0);
+            }
+        }
+        return nueva;
+    }  
 }
