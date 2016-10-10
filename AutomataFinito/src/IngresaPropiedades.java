@@ -30,6 +30,7 @@ public class IngresaPropiedades extends javax.swing.JFrame {
         initComponents();
         cambiaEstado(false);
         chkStatusInitial.setSelected(true);
+        rbReject.setSelected(true);
         n=0;
     }
 
@@ -105,6 +106,11 @@ public class IngresaPropiedades extends javax.swing.JFrame {
         rbAceptation.setText("Aceptacion");
 
         rbReject.setText("Rechazo");
+        rbReject.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                rbRejectActionPerformed(evt);
+            }
+        });
 
         txtViewStatus.setColumns(20);
         txtViewStatus.setRows(5);
@@ -341,6 +347,10 @@ public class IngresaPropiedades extends javax.swing.JFrame {
             evt.consume();
         }
     }//GEN-LAST:event_txtSymbolKeyTyped
+
+    private void rbRejectActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_rbRejectActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_rbRejectActionPerformed
     private void cambiaEstado(boolean a) {
         txtSymbol.setEditable(a);
         btnAddSymbol.setEnabled(a);
