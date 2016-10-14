@@ -314,7 +314,7 @@ public class Automata {
         return -1;
     }
     
-    public Automata NoDeterToDeter(Automata automataOri, JTable tabla1, JTextArea area) throws CloneNotSupportedException {
+    public Automata NoDeterToDeter(Automata automataOri, JTable tabla1, JTextArea area) {
         Automata autDete;
         Vector estado = new Vector();
         Vector estadoMinimo = new Vector();

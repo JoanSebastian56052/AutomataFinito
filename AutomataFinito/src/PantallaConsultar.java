@@ -16,7 +16,7 @@ public class PantallaConsultar extends javax.swing.JFrame {
     /**
      * Creates new form PantallaConsultar
      */
-     private Vector index;
+    private Vector index;
     private Automata autOriginal;
     private DefaultTableModel modelo;
     private Automata autDeter;
@@ -104,7 +104,7 @@ public class PantallaConsultar extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Automata No Deterministico", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 12))); // NOI18N
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)), "Transicion", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 12))); // NOI18N
 
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -276,6 +276,8 @@ public class PantallaConsultar extends javax.swing.JFrame {
                         .addGap(0, 0, Short.MAX_VALUE))))
         );
 
+        jPanel1.getAccessibleContext().setAccessibleName("Autómata de Transición");
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -283,11 +285,8 @@ public class PantallaConsultar extends javax.swing.JFrame {
         // TODO add your handling code here:
         // TODO add your handling code here:
         btnConverter.setEnabled(false);
-        try {
-            autOriginal = autOriginal.NoDeterToDeter(autOriginal, jTable1, txtViewAD);
-        } catch (CloneNotSupportedException ex) {
-            
-        }
+        autOriginal = autOriginal.NoDeterToDeter(autOriginal, jTable1, txtViewAD);
+        
         autDeter = autOriginal.getAutRed();
         int ss = autDeter.getEstados().size()+1;
         trans = autDeter.getTransiciones();
